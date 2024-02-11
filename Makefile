@@ -1,20 +1,27 @@
 # <====== PATHS
-CURRENT_PATH=$(pwd)
-BINARIES_PATH="$(CURRENT_PATH)/bin"
-TEMPORARY_PATH="$(CURRENT_PATH)/tmp"
-ENCODER_PATH="$(CURRENT_PATH)/tmp/encoder"
-ENCODER_PATH="$(CURRENT_PATH)/tmp/decoder"
-VVC_PATH="$(CURRENT_PATH)/tmp/VVCSoftware_VTM/"
-FFMPEG_PATH="$(CURRENT_PATH)/tmp/FFmpeg"
+CURRENT_PATH := $(shell pwd)
+BINARIES_PATH=$(CURRENT_PATH)/bin
+IN_PATH=$(CURRENT_PATH)/inputs
+OUT_PATH=$(CURRENT_PATH)/outputs
+CF_PATH=$(CURRENT_PATH)/src/cfg
+LOG_PATH=$(CURRENT_PATH)/logs
+
+# <=== Temporary ===>
+TEMPORARY_PATH=$(CURRENT_PATH)/tmp
+ENCODER_PATH=$(CURRENT_PATH)/tmp/encoder
+DECODER_PATH=$(CURRENT_PATH)/tmp/decoder
+VVC_PATH=$(CURRENT_PATH)/tmp/VVCSoftware_VTM/
+FFMPEG_PATH=$(CURRENT_PATH)/tmp/FFmpeg
 # ======= PATHS ======>
 
 # <====== BINARIES
-ENCODER="$(BINARIES_PATH)/vvencFFapp"
-DECODER="$(BINARIES_PATH)/vvdecapp"
-SUBPICMERGEAPP="$(BINARIES_PATH)/SubpicMergeAppStatic"
-FFMPEG="$(BINARIES_PATH)/ffmpeg"
-FFPLAY="$(BINARIES_PATH)/ffplay"
-FFPROBE="$(BINARIES_PATH)/ffprobe"
+ENCODER=vvencFFapp #$(BINARIES_PATH)/vvencFFapp
+DECODER=vvdecapp #$(BINARIES_PATH)/vvdecapp
+SUBPICMERGEAPP=SubpicMergeAppStatic #$(BINARIES_PATH)/SubpicMergeAppStatic
+FFMPEG=ffmpeg #$(BINARIES_PATH)/ffmpeg
+FFPLAY=ffplay #$(BINARIES_PATH)/ffplay
+FFPROBE=ffprobe #$(BINARIES_PATH)/ffprobe
+MP4BOX=MP4Box #$(BINARIES_PATH)/MP4Box
 # ======= BINARIES ======>
 
 install_encoder:
@@ -31,9 +38,9 @@ install_encoder:
 	cd $(CURRENT_PATH)
 install_decoder:
 	cd $(TEMPORARY_PATH)
-	mkdir $(ENCODER_PATH)
-	git clone https://github.com/fraunhoferhhi/vvdec/ $(ENCODER_PATH)
-	cd $(ENCODER_PATH)
+	mkdir $(DECODER_PATH)
+	git clone https://github.com/fraunhoferhhi/vvdec/ $(DECODER_PATH)
+	cd $(DECODER_PATH)
 	mkdir build
 	cd build
 	cmake ..
@@ -66,3 +73,38 @@ install: install_encoder install_decoder install_ffmpeg install_SubPictureMerger
 	@mkdir $(TEMPORARY_PATH)
 	@mkdir $(BINARIES_PATH)
 	@echo "Launching Install Script, this may take a while.."
+
+# STREAM_A := $(OUT_PATH)/streamA.266
+# STREAM_A_NHML := $(OUT_PATH)/streamA.nhml
+# STREAM_B := $(OUT_PATH)/streamB.266
+
+# $(STREAM_A):
+# 	exec $(ENCODER) -c $(CF_PATH)/streamA.cfg -i --Size 1920x108 --FrameRate 25 --FramesToBeEncoded 256 --InputFile $(IN_PATH)/input_1920x108_25.yuv --BitstreamFile $(STREAM_A) &> $(LOG_PATH)/streamA.encoder.log
+# $(STREAM_A_NHML):
+# 	$(MP4BOX) -add $(STREAM_A) -new $(OUT_PATH)/streamA.mp4
+# 	gpac -i $(OUT_PATH)/streamA.mp4 -o $(OUT_PATH)/streamA.nhml:pckp
+
+# exp1: "$(OUT_PATH)/streamA.266" "$(OUT_PATH)/streamB.266"
+
+
+# Wildcard target for any stream (e.g., A, B, C, ...)
+%:
+	@$(MAKE) process CFG=stream$*.cfg INPUT_FILE=input_$*.yuv OUTPUT_FILE_PREFIX=stream$*
+
+# Derived Variables for Processing (set for each invocation)
+BITSTREAM_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).266
+MP4_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).mp4
+NHML_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).nhml
+ENCODER_LOG := $(LOG_PATH)/$(OUTPUT_FILE_PREFIX).encoder.log
+
+# Processing Target
+process: $(NHML_FILE)
+
+$(NHML_FILE): $(MP4_FILE)
+	$(GPAC) -i $(MP4_FILE) -o $(NHML_FILE):pckp
+
+$(MP4_FILE): $(BITSTREAM_FILE)
+	$(MP4BOX) -add $(BITSTREAM_FILE) -new $(MP4_FILE)
+
+$(BITSTREAM_FILE):
+	exec $(ENCODER) -c $(CF_PATH)/$(CFG) -i --Size $(FRAME_SIZE) --FrameRate $(FRAME_RATE) --FramesToBeEncoded $(FRAMES_TO_BE_ENCODED) --InputFile $(IN_PATH)/$(INPUT_FILE) --BitstreamFile $(BITSTREAM_FILE) &> $(ENCODER_LOG)
