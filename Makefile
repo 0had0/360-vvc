@@ -24,6 +24,20 @@ FFPROBE=ffprobe #$(BINARIES_PATH)/ffprobe
 MP4BOX=MP4Box #$(BINARIES_PATH)/MP4Box
 # ======= BINARIES ======>
 
+FRAMES_TO_BE_ENCODED=256
+
+.env:
+	@echo "Creating .env file with current configuration..."
+	@echo "CURRENT_PATH=$(CURRENT_PATH)" > .env
+	@echo "BINARIES_PATH=$(BINARIES_PATH)" >> .env
+	@echo "IN_PATH=$(IN_PATH)" >> .env
+	@echo "OUT_PATH=$(OUT_PATH)" >> .env
+	@echo "CF_PATH=$(CF_PATH)" >> .env
+	@echo "LOG_PATH=$(LOG_PATH)" >> .env
+	@echo "ENCODER=$(ENCODER)" >> .env
+	@echo "FRAMES_TO_BE_ENCODED=$(FRAMES_TO_BE_ENCODED)" >> .env
+	@echo ".env file created successfully."
+
 install_encoder:
 	cd $(TEMPORARY_PATH)
 	mkdir $(ENCODER_PATH)
@@ -88,23 +102,34 @@ install: install_encoder install_decoder install_ffmpeg install_SubPictureMerger
 
 
 # Wildcard target for any stream (e.g., A, B, C, ...)
-%:
-	@$(MAKE) process CFG=stream$*.cfg INPUT_FILE=input_$*.yuv OUTPUT_FILE_PREFIX=stream$*
+# %:
+# 	@$(MAKE) process CFG=stream$*.cfg INPUT_FILE=input_$*.yuv OUTPUT_FILE_PREFIX=stream$*
 
 # Derived Variables for Processing (set for each invocation)
-BITSTREAM_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).266
-MP4_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).mp4
-NHML_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).nhml
-ENCODER_LOG := $(LOG_PATH)/$(OUTPUT_FILE_PREFIX).encoder.log
+# BITSTREAM_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).266
+# MP4_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).mp4
+# NHML_FILE := $(OUT_PATH)/$(OUTPUT_FILE_PREFIX).nhml
+# ENCODER_LOG := $(LOG_PATH)/$(OUTPUT_FILE_PREFIX).encoder.log
 
 # Processing Target
-process: $(NHML_FILE)
+# process: $(NHML_FILE)
 
-$(NHML_FILE): $(MP4_FILE)
-	$(GPAC) -i $(MP4_FILE) -o $(NHML_FILE):pckp
+# $(NHML_FILE): $(MP4_FILE)
+# 	$(GPAC) -i $(MP4_FILE) -o $(NHML_FILE):pckp
 
-$(MP4_FILE): $(BITSTREAM_FILE)
-	$(MP4BOX) -add $(BITSTREAM_FILE) -new $(MP4_FILE)
+# $(MP4_FILE): $(BITSTREAM_FILE)
+# 	$(MP4BOX) -add $(BITSTREAM_FILE) -new $(MP4_FILE)
 
-$(BITSTREAM_FILE):
-	exec $(ENCODER) -c $(CF_PATH)/$(CFG) -i --Size $(FRAME_SIZE) --FrameRate $(FRAME_RATE) --FramesToBeEncoded $(FRAMES_TO_BE_ENCODED) --InputFile $(IN_PATH)/$(INPUT_FILE) --BitstreamFile $(BITSTREAM_FILE) &> $(ENCODER_LOG)
+# $(BITSTREAM_FILE):
+# 	exec $(ENCODER) -c $(CF_PATH)/$(CFG) -i --Size $(FRAME_SIZE) --FrameRate $(FRAME_RATE) --FramesToBeEncoded $(FRAMES_TO_BE_ENCODED) --InputFile $(IN_PATH)/$(INPUT_FILE) --BitstreamFile $(BITSTREAM_FILE) &> $(ENCODER_LOG)
+
+process: .env
+	for file in $(IN_PATH)/*.yuv; do \
+        echo "Processing $$file"; \
+		./encode-stream.sh $$file; \
+	done
+
+	for file in $(OUT_PATH)/*.266; do \
+        echo "Processing $$file"; \
+		./generate-nhml.sh $$file;
+	done
