@@ -36,6 +36,7 @@ FRAMES_TO_BE_ENCODED=256
 	@echo "LOG_PATH=$(LOG_PATH)" >> .env
 	@echo "ENCODER=$(ENCODER)" >> .env
 	@echo "FRAMES_TO_BE_ENCODED=$(FRAMES_TO_BE_ENCODED)" >> .env
+	@echo "MP4BOX=$(MP4BOX)" >> .env
 	@echo ".env file created successfully."
 
 install_encoder:
@@ -123,13 +124,13 @@ install: install_encoder install_decoder install_ffmpeg install_SubPictureMerger
 # $(BITSTREAM_FILE):
 # 	exec $(ENCODER) -c $(CF_PATH)/$(CFG) -i --Size $(FRAME_SIZE) --FrameRate $(FRAME_RATE) --FramesToBeEncoded $(FRAMES_TO_BE_ENCODED) --InputFile $(IN_PATH)/$(INPUT_FILE) --BitstreamFile $(BITSTREAM_FILE) &> $(ENCODER_LOG)
 
-process: .env
-	for file in $(IN_PATH)/*.yuv; do \
-        echo "Processing $$file"; \
-		./encode-stream.sh $$file; \
-	done
+# process: .env
+# 	for file in $(IN_PATH)/*.yuv; do \
+# 		echo "Processing $($$file)"; \
+# 		./encode-streams.sh $$file; \
+# 	done
 
-	for file in $(OUT_PATH)/*.266; do \
-        echo "Processing $$file"; \
-		./generate-nhml.sh $$file;
-	done
+# 	for file in $(OUT_PATH)/*.266; do \
+#         echo "Processing $$file"; \
+# 		./generate-nhml.sh $$file; \
+# 	done
