@@ -38,9 +38,9 @@ for file in "$dir"/*.266; do
   MP4=$(echo "$filename" | sed 's/\.266$/.mp4/')
   NHML=$(echo "$filename" | sed 's/\.266$/.nhml/')
 
-  MP4Box -add $OUT_PATH/$filename -new $OUT_PATH/$MP4
+  ~/Documents/gpac/bin/gcc/MP4Box -add $OUT_PATH/$filename -new $OUT_PATH/$MP4
   
-  gpac -i $OUT_PATH/$MP4 -o $OUT_PATH/$NHML:pckp
+  ~/Documents/gpac/bin/gcc/gpac -i $OUT_PATH/$MP4 -o $OUT_PATH/$NHML:pckp
 done
 
 echo "Done processing all files in '$dir'"
