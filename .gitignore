@@ -2,3 +2,12 @@ logs/*
 outputs/*
 inputs
 inputs/*
+timer/*
+summer/*
+test-streams/*
+transition_script_testing/*
+test_main/*
+results/*.mp4
+results/*.txt
+tmp/*
+*.yuv

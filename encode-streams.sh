@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -ne 3 ]; then
     echo "Usage: $0 <filename_widthxheight_framerate.yuv>"
     exit 1
 fi
@@ -20,6 +20,9 @@ else
     exit 2
 fi
 
+OUT_PATH="$2"
+LOG_PATH="$3"
+
 echo "Processing file: $BASENAME"
 echo "Width: $width, Height: $height, FrameRate: $framerate"
 
@@ -29,45 +32,17 @@ LQ_Long_IRAP=LQ_Long_IRAP
 HQ_Short_IRAP=HQ_Short_IRAP
 LQ_Short_IRAP=LQ_Short_IRAP
 
+size="$width"x"$height"
+DEFAULT="--TreatAsSubPic 1 --NoTID --ForceMvdL1 --STA 0 --ALF 0 --Size $size --FrameRate $framerate --InputFile $FILENAME --DecodingRefreshType 2 --Level 6.1"
+LONG_IRAP="--IntraPeriod 128 --GOPSize 32"
+SHORT_IRAP="--IntraPeriod 32 --GOPSize 32"
+
 # --FramesToBeEncoded $FRAMES_TO_BE_ENCODED \
-exec $ENCODER \
-    --TreatAsSubPic 1 \
-    --IntraPeriod 128 \
-    --DecodingRefreshType 2 \
-    --GOPSize 32 \
-    --QP 16 \
-    --Size "$width"x"$height" \
-    --FrameRate "$framerate" \
-    --InputFile "$FILENAME" \
-    --BitstreamFile "$OUT_PATH/$HQ_Long_IRAP@$BASENAME.266" \
-    &> "$LOG_PATH/$HQ_Long_IRAP.encoder.log" & exec $ENCODER \
-    --TreatAsSubPic 1 \
-    --IntraPeriod 128 \
-    --DecodingRefreshType 2 \
-    --GOPSize 32 \
-    --QP 49 \
-    --Size "$width"x"$height" \
-    --FrameRate "$framerate" \
-    --InputFile "$FILENAME" \
-    --BitstreamFile "$OUT_PATH/$LQ_Long_IRAP@$BASENAME.266" \
-    &> "$LOG_PATH/$LQ_Long_IRAP.encoder.log" & exec $ENCODER \
-    --TreatAsSubPic 1 \
-    --IntraPeriod 32 \
-    --DecodingRefreshType 2 \
-    --GOPSize 16 \
-    --QP 16 \
-    --Size "$width"x"$height" \
-    --FrameRate "$framerate" \
-    --InputFile "$FILENAME" \
-    --BitstreamFile "$OUT_PATH/$HQ_Short_IRAP@$BASENAME.266" \
-    &> "$LOG_PATH/$HQ_Short_IRAP.encoder.log" & exec $ENCODER \
-    --TreatAsSubPic 1 \
-    --IntraPeriod 32 \
-    --DecodingRefreshType 2 \
-    --GOPSize 16 \
-    --QP 49 \
-    --Size "$width"x"$height" \
-    --FrameRate "$framerate" \
-    --InputFile "$FILENAME" \
-    --BitstreamFile "$OUT_PATH/$LQ_Short_IRAP@$BASENAME.266" \
-    &> "$LOG_PATH/$LQ_Short_IRAP.encoder.log"
+# exec $ENCODER $DEFAULT $LONG_IRAP --QP 16 --BitstreamFile "$OUT_PATH/$HQ_Long_IRAP@$BASENAME.266" &> "$LOG_PATH/$HQ_Long_IRAP@$BASENAME.log" &
+# exec $ENCODER $DEFAULT $LONG_IRAP --QP 50 --BitstreamFile "$OUT_PATH/$LQ_Long_IRAP@$BASENAME.266" &> "$LOG_PATH/$LQ_Long_IRAP@$BASENAME.log" &
+# exec $ENCODER $DEFAULT $SHORT_IRAP --QP 16 --BitstreamFile "$OUT_PATH/$HQ_Short_IRAP@$BASENAME.266" &> "$LOG_PATH/$HQ_Short_IRAP@$BASENAME.log" &
+# exec $ENCODER $DEFAULT $SHORT_IRAP --QP 50 --BitstreamFile "$OUT_PATH/$LQ_Short_IRAP@$BASENAME.266" &> "$LOG_PATH/$LQ_Short_IRAP@$BASENAME.log"
+exec $ENCODER $DEFAULT $LONG_IRAP --QP 16 --BitstreamFile "$OUT_PATH/$HQ_Long_IRAP.266" &> "$LOG_PATH/$HQ_Long_IRAP.log" &
+exec $ENCODER $DEFAULT $LONG_IRAP --QP 50 --BitstreamFile "$OUT_PATH/$LQ_Long_IRAP.266" &> "$LOG_PATH/$LQ_Long_IRAP.log" &
+exec $ENCODER $DEFAULT $SHORT_IRAP --QP 16 --BitstreamFile "$OUT_PATH/$HQ_Short_IRAP.266" &> "$LOG_PATH/$HQ_Short_IRAP.log" &
+exec $ENCODER $DEFAULT $SHORT_IRAP --QP 50 --BitstreamFile "$OUT_PATH/$LQ_Short_IRAP.266" &> "$LOG_PATH/$LQ_Short_IRAP.log"

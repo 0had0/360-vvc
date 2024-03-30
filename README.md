@@ -41,7 +41,7 @@ For visual playback, you will either have to:
 https://github.com/fraunhoferhhi/vvenc/wiki/FFmpeg-Integration
 
 For bitstream manipulation, you will need to get and compile GPAC (preferably with the custom FFmpeg installed):
-https://github.com/gpac/gpac
+    https://github.com/gpac/gpac
 
 
 ##	Study work
@@ -54,3 +54,6 @@ The merging of several VVC streams into a single one requires modifying the bits
 -	Slices, tiles and subpictures (section 6.3.1)
 -	Sequence parameter set syntax (section 7.3.2.4)
 -	Slice and Picture header syntax (section 7.3.7)
+
+
+talk about ALF and STA
